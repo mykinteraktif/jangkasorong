@@ -377,7 +377,6 @@ body.splashing #bgx .bgx-splash{opacity:1}
 .sp-read b{color:var(--yellow);font-variant-numeric:tabular-nums;font-size:22px}
 .sp-go{position:relative;margin-top:18px;opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s;pointer-events:none}
 #splash.ready .sp-go{opacity:1;transform:none;pointer-events:auto;animation:spPulse 1.6s 1s ease-in-out infinite}
-.sp-foot{position:absolute;bottom:30px;left:0;right:0;text-align:center;font-size:14px;color:#8fb0d6;letter-spacing:.3px}
 @keyframes spUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes spPop{0%{opacity:0;transform:scale(.7)}70%{opacity:1;transform:scale(1.05)}100%{transform:scale(1)}}
 @keyframes spSway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
@@ -6688,8 +6687,7 @@ function splash() {
     <div class="sp-logo">${logoGearSVG(190)}<div class="logo-text"><div class="lt1">PENGUKURAN</div><div class="lt2">JANGKA SORONG</div><div class="lt3">OTOMOTIF</div></div></div>
     <div class="sp-ruler" aria-hidden="true"><div class="rl"><div class="fill"></div></div><div class="jaw"></div></div>
     <div class="sp-read" aria-live="polite">Mengkalibrasi jangka sorong… <b>0,00 mm</b></div>
-    <button class="btn b-yellow sp-go" type="button">${IC.play}KETUK UNTUK MULAI</button>
-    <div class="sp-foot">${esc(CONFIG.mapel)} — SMK Kelas ${esc(CONFIG.kelas)}, Fase ${esc(CONFIG.fase)}</div>`;
+    <button class="btn b-yellow sp-go" type="button">${IC.play}KETUK UNTUK MULAI</button>`;
   const fill = el.querySelector('.fill'), jaw = el.querySelector('.jaw'), rd = el.querySelector('.sp-read'), btn = el.querySelector('.sp-go');
   const MAX = 150, DUR = reduce ? 1 : 2400, t0 = performance.now() + (reduce ? 0 : 700);
   let raf, done = false;
