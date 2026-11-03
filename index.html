@@ -5536,8 +5536,6 @@ reg('beranda', {
     <div style="position:absolute;left:520px;top:470px;width:200px">${conrodDecor()}</div>
     <div style="position:absolute;left:700px;top:438px;width:200px">${discDecor()}</div>
     <div style="position:absolute;left:300px;top:540px;width:110px">${gearDecor()}</div>
-    <div class="welcome"><div class="wh">Selamat datang di Bengkel Pengukuran Otomotif!</div>
-      <p>Dalam permainan ini, kamu akan belajar menggunakan jangka sorong untuk mengukur berbagai komponen kendaraan. Kenali bagian alat, pelajari cara membaca skala, dan selesaikan tantangan pengukuran dengan teliti. Siapkan dirimu menjadi teknisi otomotif yang kompeten!</p></div>
     <nav class="home-menu" aria-label="Menu utama">
       <button class="mbtn y" data-go="ikhtisar" data-autofocus><span class="ico" style="color:#e2362f">${IC.play}</span>MULAI GAME</button>
       <button class="mbtn bl" data-go="panduan"><span class="ico" style="color:#1658c4">${IC.book}</span>PANDUAN</button>
@@ -5545,11 +5543,7 @@ reg('beranda', {
       <button class="mbtn p" data-go="profil"><span class="ico" style="color:#5a45d6">${IC.user}</span>PROFIL BELAJAR</button>
       <button class="mbtn r" data-act="keluar"><span class="ico" style="color:#d42d22">${IC.power}</span>KELUAR</button>
     </nav>
-    <div class="infobar">
-      <div>${IC.book.replace('fill="currentColor"', 'fill="#fff"')}<span><small>Bahan Ajar Digital:</small><b>${esc(CONFIG.judul)}</b></span></div>
-      <div>${IC.user.replace('fill="currentColor"', 'fill="#fff"')}<span><small>Sasaran Pengguna:</small><b>Siswa SMK Kelas ${esc(CONFIG.kelas)} — Fase ${CONFIG.fase}</b></span></div>
-      <div><svg viewBox="0 0 48 48"><path d="M6 30 l4 -10 q2 -5 8 -5 h12 q6 0 8 5 l4 10 v8 h-36z" fill="#fff"/><circle cx="14" cy="38" r="5" fill="#123f8a" stroke="#fff" stroke-width="2"/><circle cx="34" cy="38" r="5" fill="#123f8a" stroke="#fff" stroke-width="2"/><path d="M13 26 l3 -7 h16 l3 7z" fill="#9fd0ff"/></svg><span><small>Program Keahlian:</small><b>${esc(CONFIG.programKeahlian)}</b></span></div>
-    </div>`;
+    `;
     $('[data-act=kasus]', root).onclick = () => { AU.click(); go('studi-kasus', { force: true }); };
     $('[data-act=keluar]', root).onclick = () => {
       AU.click();
