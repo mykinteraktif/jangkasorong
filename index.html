@@ -15,7 +15,7 @@ input,textarea{font-family:inherit}
   --yellow:#ffc61a;--amber:#ff9f0a;--orange:#ff7a00;--red:#e2362f;--green:#22a447;--green2:#43d16a;
   --steel:#cfd8e3;--ink:#0d1b2a;--paper:#f5f8fc;--muted:#5b6b7f;--line:#d6e0ec;
 }
-#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center center;overflow:hidden;background:#0e1c2e;box-shadow:0 0 60px rgba(0,0,0,.6)}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center center;overflow:hidden;background:#0e1c2e;z-index:1}
 #bg{position:absolute;inset:0;z-index:0}
 #bg svg{width:100%;height:100%;display:block}
 #screen{position:absolute;inset:0;z-index:2}
@@ -327,16 +327,38 @@ textarea.refl:focus{border-color:#3b93ff}
 @media print{
   body{background:#fff}
   #stage{transform:none!important;left:0;top:0;box-shadow:none}
-  #bg,.hud,.bnav,#toast,.noprint{display:none!important}
+  #bg,#bgx,.hud,.bnav,#toast,.noprint{display:none!important}
 }
 
 .hot.down span{bottom:auto;top:var(--dy,20px)}
 .steps.sm{gap:5px}.steps.sm li{font-size:13.5px;line-height:1.3}.steps.sm li .n{width:22px;height:22px;font-size:12px}
 
+/* ===== Latar penuh kiri-kanan (mengisi area di luar stage 16:9) ===== */
+#bgx{position:fixed;inset:0;z-index:0;overflow:hidden;background:#050b14}
+#bgx .bgx-svg,#bgx .bgx-dim,#bgx .bgx-splash{position:absolute;inset:0}
+#bgx .bgx-svg svg{width:100%;height:100%;display:block}
+#bgx .bgx-svg{transition:filter .3s}
+#bgx.soft .bgx-svg{filter:blur(var(--bgx-blur,2.5px))}
+#bgx .bgx-dim{top:var(--st-top);height:var(--st-h);bottom:auto;opacity:0;transition:opacity .2s}
+#bgx .bgx-dim::before,#bgx .bgx-dim::after{content:"";position:absolute;left:0;right:0;height:100vh}
+#bgx .bgx-dim::before{bottom:100%}#bgx .bgx-dim::after{top:100%}
+#bgx.dim .bgx-dim{opacity:1;background:linear-gradient(180deg,rgba(6,16,30,.74),rgba(6,16,30,.6) 40%,rgba(6,16,30,.8))}
+#bgx.dim .bgx-dim::before{background:rgba(6,16,30,.74)}#bgx.dim .bgx-dim::after{background:rgba(6,16,30,.8)}
+#bgx.dim.light .bgx-dim{background:linear-gradient(180deg,rgba(6,16,30,.45),rgba(6,16,30,.2) 45%,rgba(6,16,30,.55))}
+#bgx.dim.light .bgx-dim::before{background:rgba(6,16,30,.45)}#bgx.dim.light .bgx-dim::after{background:rgba(6,16,30,.55)}
+#bgx .bgx-splash{opacity:0;pointer-events:none;transition:opacity .6s ease;
+  background:repeating-linear-gradient(-45deg,#ffc61a 0 var(--sp-s22),#1a1a1a var(--sp-s22) var(--sp-s44)) 0 var(--st-top)/100% var(--sp-s16) no-repeat,
+  repeating-linear-gradient(-45deg,#ffc61a 0 var(--sp-s22),#1a1a1a var(--sp-s22) var(--sp-s44)) 0 calc(var(--st-top) + var(--st-h) - var(--sp-s16))/100% var(--sp-s16) no-repeat,
+  repeating-linear-gradient(90deg,rgba(159,208,255,.07) 0 1px,transparent 1px var(--sp-s40)) var(--st-left) 0/auto,
+  repeating-linear-gradient(0deg,rgba(159,208,255,.07) 0 1px,transparent 1px var(--sp-s40)) 0 var(--st-top)/auto,
+  radial-gradient(ellipse var(--sp-rx) var(--sp-ry) at var(--sp-cx) var(--sp-cy),#16407f 0%,#0a1d38 55%,#050b14 100%)}
+body.splashing #bgx .bgx-splash{opacity:1}
+#bgx::after{content:"";position:absolute;inset:0;background:rgba(3,10,20,.7);opacity:0;pointer-events:none}
+#bgx.modal::after{opacity:1}
 /* ===== Splash screen ===== */
 #splash{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;color:#fff;
-  background:radial-gradient(ellipse at 50% 40%,#16407f 0%,#0a1d38 55%,#050b14 100%);transition:opacity .6s ease,transform .6s ease}
-#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+  background:radial-gradient(ellipse 1040px 760px at 640px 288px,#16407f 0%,#0a1d38 55%,#050b14 100%);transition:opacity .6s ease}
+#splash.out{opacity:0;pointer-events:none}
 #splash::before{content:"";position:absolute;inset:0;background:
   repeating-linear-gradient(90deg,rgba(159,208,255,.07) 0 1px,transparent 1px 40px),
   repeating-linear-gradient(0deg,rgba(159,208,255,.07) 0 1px,transparent 1px 40px)}
@@ -364,6 +386,7 @@ textarea.refl:focus{border-color:#3b93ff}
 </style>
 </head>
 <body>
+<div id="bgx" aria-hidden="true"><div class="bgx-svg"></div><div class="bgx-dim"></div><div class="bgx-splash"></div></div>
 <div id="stage">
   <div id="bg"></div>
   <div id="screen"></div>
@@ -4426,8 +4449,30 @@ function fitStage() {
   const st = $('#stage');
   stageScale = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
   st.style.transform = `translate(-50%,-50%) scale(${stageScale})`;
+  syncBgx();
   const rot = $('#rotate');
   if (rot && !rot.dataset.dismissed) rot.classList.toggle('show', window.innerHeight > window.innerWidth * 1.1 && window.innerWidth < 900);
+}
+
+/* Latar penuh: area di luar stage diisi latar bengkel yang sama, sejajar dan seskala dengan stage */
+function syncBgx() {
+  const bx = document.getElementById('bgx'); if (!bx) return;
+  const s = stageScale, vw = window.innerWidth, vh = window.innerHeight;
+  const W = vw / s, H = vh / s, x0 = (STAGE_W - W) / 2, y0 = (STAGE_H - H) / 2;
+  const svg = bx.querySelector('.bgx-svg svg');
+  if (svg) { svg.setAttribute('viewBox', `${x0} ${y0} ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'none'); }
+  const top = (vh - STAGE_H * s) / 2, left = (vw - STAGE_W * s) / 2, st = bx.style;
+  st.setProperty('--st-top', top + 'px'); st.setProperty('--st-left', left + 'px'); st.setProperty('--st-h', STAGE_H * s + 'px');
+  st.setProperty('--bgx-blur', (2.5 * s) + 'px');
+  [16, 22, 40, 44].forEach(n => st.setProperty('--sp-s' + n, n * s + 'px'));
+  st.setProperty('--sp-rx', 1040 * s + 'px'); st.setProperty('--sp-ry', 760 * s + 'px');
+  st.setProperty('--sp-cx', left + 640 * s + 'px'); st.setProperty('--sp-cy', top + 288 * s + 'px');
+}
+function syncBgxMood() {
+  const bx = document.getElementById('bgx'); if (!bx) return;
+  const d = document.querySelector('#screen .scr > .dimmer');
+  bx.classList.toggle('soft', $('#bg').classList.contains('soft'));
+  bx.classList.toggle('dim', !!d); bx.classList.toggle('light', !!(d && d.classList.contains('light')));
 }
 
 /* ---------- Penyimpanan (localStorage + cadangan memori) ---------- */
@@ -4567,6 +4612,7 @@ function go(id, params = {}, fromPop = false) {
   const r = SCREENS[id].render(root, params);
   if (typeof r === 'function') CUR_CLEAN = r;
   if (!fromPop) { try { history.pushState({ id }, '', '#' + id); } catch (e) { } }
+  syncBgxMood();
   updateHUD();
   const f = root.querySelector('[data-autofocus]'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 50);
 }
@@ -4812,8 +4858,8 @@ function workshopBG() {
     <pattern id="bgStripe" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="40" height="40" fill="#1b1d20"/><rect width="20" height="40" fill="#f2b705"/></pattern>
     <linearGradient id="bgMat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c333c"/><stop offset="1" stop-color="#1b2026"/></linearGradient>
   </defs>
-  <rect width="1280" height="720" fill="url(#bgWall)"/>
-  ${[160, 400, 640, 880, 1120].map(x => `<line x1="${x}" y1="0" x2="${x}" y2="470" stroke="#30486a" stroke-width="2" opacity=".5"/>`).join('')}
+  <rect x="-3000" y="-2000" width="7280" height="2470" fill="url(#bgWall)"/><rect x="-3000" y="470" width="7280" height="10" fill="#263c58"/>
+  ${[-1520, -1280, -1040, -800, -560, -320, -80, 160, 400, 640, 880, 1120, 1360, 1600, 1840, 2080, 2320, 2560, 2800].map(x => `<line x1="${x}" y1="-2000" x2="${x}" y2="470" stroke="#30486a" stroke-width="2" opacity=".5"/>`).join('')}
   <g opacity=".95">
     <rect x="950" y="70" width="300" height="250" rx="6" fill="#1b2a3d"/>
     ${[0, 1, 2].map(c => [0, 1].map(r => `<rect x="${962 + c * 96}" y="${82 + r * 116}" width="86" height="106" fill="url(#bgWin)" opacity=".85"/>`).join('')).join('')}
@@ -4836,8 +4882,8 @@ function workshopBG() {
     <circle cx="820" cy="436" r="11" fill="#7d8894"/><circle cx="1010" cy="436" r="11" fill="#7d8894"/>
     <rect x="740" y="456" width="340" height="10" fill="#0d2f6b"/>
   </g>
-  <rect x="0" y="470" width="1280" height="250" fill="url(#bgFloor)"/>
-  <rect x="0" y="470" width="1280" height="12" fill="url(#bgStripe)" opacity=".9"/>
+  <rect x="-3000" y="470" width="7280" height="250" fill="url(#bgFloor)"/><rect x="-3000" y="719" width="7280" height="2000" fill="#14181e"/>
+  <rect x="-3000" y="470" width="7280" height="12" fill="url(#bgStripe)" opacity=".9"/>
   ${[-200, 0, 200, 400, 640, 880, 1080, 1280, 1480].map(x => `<line x1="640" y1="470" x2="${x}" y2="720" stroke="#4a5462" stroke-width="1.5" opacity=".35"/>`).join('')}
   ${tires}
   <g>
@@ -6625,6 +6671,9 @@ reg('pengulangan', {
 (function boot() {
   document.getElementById('gdefs').innerHTML = '<defs>' + GLOBAL_DEFS + '</defs>';
   document.getElementById('bg').innerHTML = workshopBG();
+  document.querySelector('#bgx .bgx-svg').innerHTML = workshopBG().replace(/ id="(bg[A-Za-z]+)"/g, ' id="x$1"').replace(/url\(#(bg[A-Za-z]+)\)/g, 'url(#x$1)');
+  document.body.classList.add('splashing');
+  new MutationObserver(() => document.getElementById('bgx').classList.toggle('modal', document.getElementById('modal').classList.contains('show'))).observe(document.getElementById('modal'), { attributes: true, attributeFilter: ['class'] });
   fitStage();
   window.addEventListener('resize', fitStage);
   const rot = document.getElementById('rotate');
@@ -6633,6 +6682,7 @@ reg('pengulangan', {
   go(SCREENS[start] && start !== 'penutup' ? start : 'beranda', { force: true }, true);
   try { history.replaceState({ id: CUR }, '', '#' + CUR); } catch (e) { }
   splash();
+  if (!document.getElementById('splash')) document.body.classList.remove('splashing');
 })();
 
 /* ===== Splash screen pembuka ===== */
@@ -6660,7 +6710,7 @@ function splash() {
   function close() {
     if (done) return; done = true; cancelAnimationFrame(raf);
     try { AU.click(); } catch (e) { }
-    el.classList.add('out');
+    el.classList.add('out'); document.body.classList.remove('splashing');
     setTimeout(() => { el.remove(); const f = document.querySelector('#screen [data-autofocus]'); if (f) f.focus({ preventScroll: true }); }, 650);
   }
   btn.onclick = close;
