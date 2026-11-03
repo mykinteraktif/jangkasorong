@@ -332,6 +332,35 @@ textarea.refl:focus{border-color:#3b93ff}
 
 .hot.down span{bottom:auto;top:var(--dy,20px)}
 .steps.sm{gap:5px}.steps.sm li{font-size:13.5px;line-height:1.3}.steps.sm li .n{width:22px;height:22px;font-size:12px}
+
+/* ===== Splash screen ===== */
+#splash{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;color:#fff;
+  background:radial-gradient(ellipse at 50% 40%,#16407f 0%,#0a1d38 55%,#050b14 100%);transition:opacity .6s ease,transform .6s ease}
+#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+#splash::before{content:"";position:absolute;inset:0;background:
+  repeating-linear-gradient(90deg,rgba(159,208,255,.07) 0 1px,transparent 1px 40px),
+  repeating-linear-gradient(0deg,rgba(159,208,255,.07) 0 1px,transparent 1px 40px)}
+#splash::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;background:repeating-linear-gradient(-45deg,#ffc61a 0 22px,#1a1a1a 22px 44px);opacity:.9}
+.sp-stripe{position:absolute;left:0;right:0;top:0;height:16px;background:repeating-linear-gradient(-45deg,#ffc61a 0 22px,#1a1a1a 22px 44px);opacity:.9}
+.sp-kicker{position:relative;font-size:16px;font-weight:800;letter-spacing:4px;color:#9fd0ff;text-transform:uppercase;margin-bottom:6px;animation:spUp .7s .1s both}
+.sp-logo{position:relative;display:flex;align-items:center;gap:6px;animation:spPop .8s .25s both}
+.sp-logo .logo-gear{width:190px;height:190px;animation:spSway 3s ease-in-out infinite}
+.sp-logo .lt2{font-size:60px}
+.sp-ruler{position:relative;width:560px;height:46px;margin-top:34px;animation:spUp .7s .55s both}
+.sp-ruler .rl{position:absolute;inset:0;border-radius:6px;background:linear-gradient(180deg,#eef3f8,#b9c5d2);border:2px solid #fff;overflow:hidden;
+  background-image:repeating-linear-gradient(90deg,#1a2633 0 2px,transparent 2px 11.2px),linear-gradient(180deg,#eef3f8,#b9c5d2);background-size:100% 14px,100% 100%;background-repeat:no-repeat}
+.sp-ruler .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,rgba(29,111,224,.25),rgba(59,147,255,.55))}
+.sp-ruler .jaw{position:absolute;top:-14px;left:0;width:18px;height:74px;margin-left:-9px;border-radius:4px;background:linear-gradient(90deg,#ffe066,#ffb703 55%,#f08c00);box-shadow:0 4px 10px rgba(0,0,0,.45);border:2px solid #fff6cc}
+.sp-read{position:relative;margin-top:22px;font-size:18px;font-weight:700;color:#cfe3ff;min-height:24px;animation:spUp .7s .7s both}
+.sp-read b{color:var(--yellow);font-variant-numeric:tabular-nums;font-size:22px}
+.sp-go{position:relative;margin-top:18px;opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s;pointer-events:none}
+#splash.ready .sp-go{opacity:1;transform:none;pointer-events:auto;animation:spPulse 1.6s 1s ease-in-out infinite}
+.sp-foot{position:absolute;bottom:30px;left:0;right:0;text-align:center;font-size:14px;color:#8fb0d6;letter-spacing:.3px}
+@keyframes spUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes spPop{0%{opacity:0;transform:scale(.7)}70%{opacity:1;transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes spSway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes spPulse{0%,100%{box-shadow:0 6px 0 rgba(0,0,0,.28),0 0 0 0 rgba(255,198,26,.6)}50%{box-shadow:0 6px 0 rgba(0,0,0,.28),0 0 0 14px rgba(255,198,26,0)}}
+@media print{#splash{display:none!important}}
 </style>
 </head>
 <body>
@@ -340,6 +369,7 @@ textarea.refl:focus{border-color:#3b93ff}
   <div id="screen"></div>
   <div id="toast" aria-live="polite"></div>
   <div id="modal"></div>
+  <div id="splash" role="dialog" aria-label="Layar pembuka"></div>
 </div>
 <svg id="gdefs" width="0" height="0" style="position:absolute;left:0;top:0" aria-hidden="true" focusable="false"></svg>
 <div id="rotate" role="dialog" aria-label="Putar perangkat">
@@ -6602,7 +6632,40 @@ reg('pengulangan', {
   const start = (location.hash || '').slice(1);
   go(SCREENS[start] && start !== 'penutup' ? start : 'beranda', { force: true }, true);
   try { history.replaceState({ id: CUR }, '', '#' + CUR); } catch (e) { }
+  splash();
 })();
+
+/* ===== Splash screen pembuka ===== */
+function splash() {
+  const el = document.getElementById('splash'); if (!el) return;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.innerHTML = `<div class="sp-stripe"></div>
+    <div class="sp-kicker">${esc(CONFIG.jenis)} · ${esc(CONFIG.programKeahlian)}</div>
+    <div class="sp-logo">${logoGearSVG(190)}<div class="logo-text"><div class="lt1">PENGUKURAN</div><div class="lt2">JANGKA SORONG</div><div class="lt3">OTOMOTIF</div></div></div>
+    <div class="sp-ruler" aria-hidden="true"><div class="rl"><div class="fill"></div></div><div class="jaw"></div></div>
+    <div class="sp-read" aria-live="polite">Mengkalibrasi jangka sorong… <b>0,00 mm</b></div>
+    <button class="btn b-yellow sp-go" type="button">${IC.play}KETUK UNTUK MULAI</button>
+    <div class="sp-foot">${esc(CONFIG.mapel)} — SMK Kelas ${esc(CONFIG.kelas)}, Fase ${esc(CONFIG.fase)}</div>`;
+  const fill = el.querySelector('.fill'), jaw = el.querySelector('.jaw'), rd = el.querySelector('.sp-read'), btn = el.querySelector('.sp-go');
+  const MAX = 150, DUR = reduce ? 1 : 2400, t0 = performance.now() + (reduce ? 0 : 700);
+  let raf, done = false;
+  function step(now) {
+    const k = clamp((now - t0) / DUR, 0, 1), e = 1 - Math.pow(1 - k, 3);
+    fill.style.width = (e * 100) + '%'; jaw.style.left = (e * 100) + '%';
+    rd.querySelector('b').textContent = fmtN(e * MAX, 2) + ' mm';
+    if (k < 1) raf = requestAnimationFrame(step);
+    else { rd.innerHTML = 'Alat siap digunakan! <b>Kalibrasi OK ✓</b>'; el.classList.add('ready'); btn.focus({ preventScroll: true }); }
+  }
+  raf = requestAnimationFrame(step);
+  function close() {
+    if (done) return; done = true; cancelAnimationFrame(raf);
+    try { AU.click(); } catch (e) { }
+    el.classList.add('out');
+    setTimeout(() => { el.remove(); const f = document.querySelector('#screen [data-autofocus]'); if (f) f.focus({ preventScroll: true }); }, 650);
+  }
+  btn.onclick = close;
+  el.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') && el.classList.contains('ready')) { e.preventDefault(); close(); } });
+}
 
 </script>
 </body>
